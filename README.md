@@ -1,10 +1,18 @@
 # Salesforce Batchable Sequence
 
-> Execute multiple batchable jobs one after another.
+> Execute multiple Salesforce batchable Apex jobs one after another.
 
 This SFDX project provides a small orchestration framework which allows you to execute multiple `Database.Batchable` jobs as a chained sequence.
 
 A typical use case for this solution is processing large sets of data for different Salesforce objects where the jobs have to run one after another due to interdependencies between the records.
+
+- [Salesforce Batchable Sequence](#salesforce-batchable-sequence)
+  - [Installation](#installation)
+  - [Usage](#usage)
+    - [Using Subclasses of sbs_BatchableSequence](#using-subclasses-of-sbs_batchablesequence)
+    - [Using Delegation to Independent Batchable Classes](#using-delegation-to-independent-batchable-classes)
+  - [Limitations](#limitations)
+  - [License](#license)
 
 ## Installation
 
@@ -19,7 +27,7 @@ Sequences of batchable jobs should be executed using the method `sbs_BatchableSe
 
 A job configuration comprises the following information:
 
-- `className`: String value defining the Apex class to execute. This class must implement the `Database.Batchable` interface. If the start type is `DIRECT` the class must also be a subclass of `sbs_BatchableSequence`.
+- `className`: String value defining the Apex class to execute. This class must implement the `Database.Batchable` interface and instances must be instantiable via default constructor (without any parameters). If the start type is `DIRECT` the class must also be a subclass of `sbs_BatchableSequence`.
 - `startType`: Enum value defining the start type of the job. The default is `DIRECT` which means that the given class is executed directly as batchable job and is responsible for triggering the execution of successors when it finishes. Other start types support using a batchable implementations which cannot extend the base class from this framework.
 - `batchSize`: Integer value defining the number of records to process per batch. The default is 200.
 
@@ -109,6 +117,10 @@ sbs_BatchableSequence.execute(new List<sbs_BatchableSequence.JobConfig>{
 ```
 
 This will first execute the Account batch job using the wrapper for `Iterable` start methods. When it finishes it will execute the Contact batch job using the wrapper for `QueryLocator` start methods.
+
+## Limitations
+
+Since the batchable instances must be instantiated via default constructor you cannot use the constructor to pass any parameters to the batch job.
 
 ## License
 
