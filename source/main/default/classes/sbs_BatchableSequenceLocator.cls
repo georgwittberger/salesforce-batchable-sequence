@@ -1,5 +1,8 @@
 /**
  * Batchable sequence starting with a job returning a QueryLocator from the start method.
+ * 
+ * NOTE: This wrapper class creates a new instance of the job class in the start, execute and finish methods.
+ * You will also only see this wrapper class name in the Apex jobs log instead of the real job class name.
  */
 global inherited sharing class sbs_BatchableSequenceLocator extends sbs_BatchableSequence implements Database.Batchable<SObject> {
     /**
