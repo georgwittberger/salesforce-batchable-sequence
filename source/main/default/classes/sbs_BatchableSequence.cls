@@ -79,6 +79,33 @@ global inherited sharing virtual class sbs_BatchableSequence {
          * Number of records to process per batch.
          */
         global Integer batchSize;
+
+        global JobConfig() {}
+
+        /**
+         * Create new job configuration with default batch size.
+         * 
+         * @param  className Qualified name of the Database.Batchable class to execute.
+         * @param  startType Return type of the start method in the Database.Batchable class.
+         * @return           New job configuration.
+         */
+        global JobConfig(String className, StartType startType) {
+            this(className, startType, 200);
+        }
+
+        /**
+         * Create new job configuration with given batch size.
+         * 
+         * @param  className Qualified name of the Database.Batchable class to execute.
+         * @param  startType Return type of the start method in the Database.Batchable class.
+         * @param  batchSize Number of records to process per batch.
+         * @return           New job configuration.
+         */
+        global JobConfig(String className, StartType startType, Integer batchSize) {
+            this.className = className;
+            this.startType = startType;
+            this.batchSize = batchSize;
+        }
     }
 
     /**
