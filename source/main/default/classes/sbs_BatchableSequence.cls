@@ -2,23 +2,18 @@
  * Abstract base class for batchable sequences.
  */
 global inherited sharing virtual class sbs_BatchableSequence {
-    private JobConfig currentJobConfig;
-    private String currentJobConfigSerialized;
-    private String successorJobsConfigSerialized;
+    private JobConfig currentJobConfiguration;
+    private String currentJobConfigurationSerialized;
+    private String successorJobConfigurationsSerialized;
 
     /**
      * Execute given list of batchable jobs.
      * 
-     * @param  jobsConfig List of job configurations.
-     * @return            Id of the first batchable job.
+     * @param  jobConfigurations List of job configurations.
+     * @return                   Id of the first batchable job.
      */
-    global static Id execute(List<JobConfig> jobsConfig) {
-        if (jobsConfig == null || jobsConfig.isEmpty()) {
-            return null;
-        }
-        List<JobConfig> successorJobsConfig = new List<JobConfig>(jobsConfig);
-        JobConfig firstJobConfig = successorJobsConfig.remove(0);
-        return executeBatchableSequence(firstJobConfig, successorJobsConfig);
+    global static Id execute(List<JobConfig> jobConfigurations) {
+        return executeBatchableSequence(jobConfigurations);
     }
 
     /**
@@ -27,20 +22,23 @@ global inherited sharing virtual class sbs_BatchableSequence {
      * @return   New batchable sequence.
      */
     protected sbs_BatchableSequence() {
-        this(null, null);
+        this(null);
     }
 
     /**
-     * Create new batchable sequence with given job configuration.
+     * Create new batchable sequence with given job configurations.
      * 
-     * @param  currentJobConfig    Current job configuration.
-     * @param  successorJobsConfig List of successor configurations.
-     * @return                     New batchable sequence.
+     * @param  jobConfigurations List of job configurations.
+     * @return                   New batchable sequence.
      */
-    protected sbs_BatchableSequence(JobConfig currentJobConfig, List<JobConfig> successorJobsConfig) {
-        this.currentJobConfig = currentJobConfig;
-        this.currentJobConfigSerialized = currentJobConfig != null ? JSON.serialize(currentJobConfig) : null;
-        this.successorJobsConfigSerialized = successorJobsConfig != null ? JSON.serialize(successorJobsConfig) : null;
+    protected sbs_BatchableSequence(List<JobConfig> jobConfigurations) {
+        if (jobConfigurations == null || jobConfigurations.isEmpty()) {
+            return;
+        }
+        List<JobConfig> successorJobConfigurations = new List<JobConfig>(jobConfigurations);
+        this.currentJobConfiguration = successorJobConfigurations.remove(0);
+        this.currentJobConfigurationSerialized = JSON.serialize(this.currentJobConfiguration);
+        this.successorJobConfigurationsSerialized = JSON.serialize(successorJobConfigurations);
     }
 
     /**
@@ -48,15 +46,15 @@ global inherited sharing virtual class sbs_BatchableSequence {
      * 
      * @return   Configuration of the current job.
      */
-    protected JobConfig getCurrentJobConfig() {
-        if (this.currentJobConfig != null) {
-            return this.currentJobConfig;
+    protected JobConfig getCurrentJobConfiguration() {
+        if (this.currentJobConfiguration != null) {
+            return this.currentJobConfiguration;
         }
-        if (String.isBlank(this.currentJobConfigSerialized)) {
+        if (String.isBlank(this.currentJobConfigurationSerialized)) {
             return null;
         }
-        this.currentJobConfig = (JobConfig) JSON.deserialize(this.currentJobConfigSerialized, JobConfig.class);
-        return this.currentJobConfig;
+        this.currentJobConfiguration = (JobConfig) JSON.deserialize(this.currentJobConfigurationSerialized, JobConfig.class);
+        return this.currentJobConfiguration;
     }
 
     /**
@@ -65,11 +63,11 @@ global inherited sharing virtual class sbs_BatchableSequence {
      * @return   New instance of the Database.Batchable class.
      */
     protected Database.Batchable<SObject> createCurrentJobInstance() {
-        JobConfig currentJobConfig = getCurrentJobConfig();
-        if (currentJobConfig == null) {
+        JobConfig currentJobConfiguration = getCurrentJobConfiguration();
+        if (currentJobConfiguration == null) {
             throw new IllegalArgumentException('Current job configuration must not be null in order to create new instance');
         }
-        return (Database.Batchable<SObject>) Type.forName(currentJobConfig.className).newInstance();
+        return (Database.Batchable<SObject>) Type.forName(currentJobConfiguration.className).newInstance();
     }
 
     /**
@@ -78,41 +76,43 @@ global inherited sharing virtual class sbs_BatchableSequence {
      * @return   Id of the next batchable job.
      */
     protected Id executeNextSuccessor() {
-        if (String.isBlank(this.successorJobsConfigSerialized)) {
+        if (String.isBlank(this.successorJobConfigurationsSerialized)) {
             return null;
         }
-        List<JobConfig> successorJobsConfig = (List<JobConfig>) JSON.deserialize(this.successorJobsConfigSerialized, List<JobConfig>.class);
-        if (successorJobsConfig == null || successorJobsConfig.isEmpty()) {
-            return null;
-        }
-        JobConfig nextJobConfig = successorJobsConfig.remove(0);
-        return executeBatchableSequence(nextJobConfig, successorJobsConfig);
+        List<JobConfig> successorJobConfigurations = (List<JobConfig>) JSON.deserialize(this.successorJobConfigurationsSerialized, List<JobConfig>.class);
+        return executeBatchableSequence(successorJobConfigurations);
     }
 
-    private static Id executeBatchableSequence(JobConfig currentJobConfig, List<JobConfig> successorJobsConfig) {
-        switch on currentJobConfig.startType {
+    private static Id executeBatchableSequence(List<JobConfig> jobConfigurations) {
+        if (jobConfigurations == null || jobConfigurations.isEmpty()) {
+            return null;
+        }
+        JobConfig nextJobConfiguration = jobConfigurations.get(0);
+        switch on nextJobConfiguration.startType {
             when DELEGATE_ITERABLE {
-                return Database.executeBatch(new sbs_BatchableSequenceIterable(currentJobConfig, successorJobsConfig), currentJobConfig.batchSize);
+                return Database.executeBatch(new sbs_BatchableSequenceIterable(jobConfigurations), nextJobConfiguration.batchSize);
             }
             when DELEGATE_QUERYLOCATOR {
-                return Database.executeBatch(new sbs_BatchableSequenceLocator(currentJobConfig, successorJobsConfig), currentJobConfig.batchSize);
+                return Database.executeBatch(new sbs_BatchableSequenceLocator(jobConfigurations), nextJobConfiguration.batchSize);
             }
             when else {
-                sbs_BatchableSequence currentJob = (sbs_BatchableSequence) Type.forName(currentJobConfig.className).newInstance();
-                currentJob.setCurrentJobConfig(currentJobConfig);
-                currentJob.setSuccessorJobsConfig(successorJobsConfig);
-                return Database.executeBatch((Database.Batchable<SObject>) currentJob, currentJobConfig.batchSize);
+                List<JobConfig> successorJobConfigurations = new List<JobConfig>(jobConfigurations);
+                JobConfig currentJobConfiguration = successorJobConfigurations.remove(0);
+                sbs_BatchableSequence currentJob = (sbs_BatchableSequence) Type.forName(currentJobConfiguration.className).newInstance();
+                currentJob.setCurrentJobConfiguration(currentJobConfiguration);
+                currentJob.setSuccessorJobConfigurations(successorJobConfigurations);
+                return Database.executeBatch((Database.Batchable<SObject>) currentJob, currentJobConfiguration.batchSize);
             }
         }
     }
 
-    private void setCurrentJobConfig(JobConfig currentJobConfig) {
-        this.currentJobConfig = currentJobConfig;
-        this.currentJobConfigSerialized = currentJobConfig != null ? JSON.serialize(currentJobConfig) : null;
+    private void setCurrentJobConfiguration(JobConfig currentJobConfiguration) {
+        this.currentJobConfiguration = currentJobConfiguration;
+        this.currentJobConfigurationSerialized = currentJobConfiguration != null ? JSON.serialize(currentJobConfiguration) : null;
     }
 
-    private void setSuccessorJobsConfig(List<JobConfig> successorJobsConfig) {
-        this.successorJobsConfigSerialized = successorJobsConfig != null ? JSON.serialize(successorJobsConfig) : null;
+    private void setSuccessorJobConfigurations(List<JobConfig> successorJobConfigurations) {
+        this.successorJobConfigurationsSerialized = successorJobConfigurations != null ? JSON.serialize(successorJobConfigurations) : null;
     }
 
     /**
@@ -131,6 +131,10 @@ global inherited sharing virtual class sbs_BatchableSequence {
          * Number of records to process per batch.
          */
         global Integer batchSize;
+        /**
+         * Additional data to pass into the batchable job.
+         */
+        global Map<String, Object> data;
 
         global JobConfig() {}
 
@@ -142,6 +146,17 @@ global inherited sharing virtual class sbs_BatchableSequence {
          */
         global JobConfig(String className) {
             this(className, sbs_BatchableSequence.StartType.DIRECT);
+        }
+
+        /**
+         * Create new job configuration with given data, default start type and default batch size.
+         * 
+         * @param  className Qualified name of the Database.Batchable class to execute.
+         * @param  data      Additional data to pass into the batchable job.
+         * @return           New job configuration.
+         */
+        global JobConfig(String className, Map<String, Object> data) {
+            this(className, 200, data);
         }
 
         /**
@@ -175,9 +190,35 @@ global inherited sharing virtual class sbs_BatchableSequence {
          * @return           New job configuration.
          */
         global JobConfig(String className, StartType startType, Integer batchSize) {
+            this(className, startType, batchSize, null);
+        }
+
+        /**
+         * Create new job configuration with given batch size, data and default start type.
+         * 
+         * @param  className Qualified name of the Database.Batchable class to execute.
+         * @param  batchSize Number of records to process per batch.
+         * @param  data      Additional data to pass into the batchable job.
+         * @return           New job configuration.
+         */
+        global JobConfig(String className, Integer batchSize, Map<String, Object> data) {
+            this(className, sbs_BatchableSequence.StartType.DIRECT, batchSize, data);
+        }
+
+        /**
+         * Create new job configuration with given parameters.
+         * 
+         * @param  className Qualified name of the Database.Batchable class to execute.
+         * @param  startType Start type of the batchable job.
+         * @param  batchSize Number of records to process per batch.
+         * @param  data      Additional data to pass into the batchable job.
+         * @return           New job configuration.
+         */
+        global JobConfig(String className, StartType startType, Integer batchSize, Map<String, Object> data) {
             this.className = className;
             this.startType = startType != null ? startType : sbs_BatchableSequence.StartType.DIRECT;
             this.batchSize = batchSize != null && batchSize > 0 ? batchSize : 200;
+            this.data = data;
         }
     }
 

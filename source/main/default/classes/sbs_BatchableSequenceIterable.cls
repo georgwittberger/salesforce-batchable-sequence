@@ -6,14 +6,13 @@
  */
 global inherited sharing class sbs_BatchableSequenceIterable extends sbs_BatchableSequence implements Database.Batchable<SObject> {
     /**
-     * Create new batchable sequence with current job returning an Iterable from the start method.
+     * Create new batchable sequence starting with a job returning an Iterable from the start method.
      * 
-     * @param  currentJobConfig    Current job configuration.
-     * @param  successorJobsConfig List of successor configurations.
-     * @return                     New batchable sequence.
+     * @param  jobConfigurations List of job configurations.
+     * @return                   New batchable sequence.
      */
-    global sbs_BatchableSequenceIterable(JobConfig currentJobConfig, List<JobConfig> successorJobsConfig) {
-        super(currentJobConfig, successorJobsConfig);
+    global sbs_BatchableSequenceIterable(List<JobConfig> jobConfigurations) {
+        super(jobConfigurations);
     }
 
     global Iterable<SObject> start(Database.BatchableContext context) {
