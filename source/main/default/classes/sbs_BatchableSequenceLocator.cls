@@ -16,18 +16,18 @@ global inherited sharing class sbs_BatchableSequenceLocator extends sbs_Batchabl
     }
 
     global Database.QueryLocator start(Database.BatchableContext context) {
-        Database.Batchable<SObject> currentJobInstance = super.createCurrentJobInstance();
-        return (Database.QueryLocator) currentJobInstance.start(context);
+        Database.Batchable<SObject> batchableInstance = createBatchableInstance();
+        return (Database.QueryLocator) batchableInstance.start(context);
     }
 
     global void execute(Database.BatchableContext context, List<SObject> scope) {
-        Database.Batchable<SObject> currentJobInstance = super.createCurrentJobInstance();
-        currentJobInstance.execute(context, scope);
+        Database.Batchable<SObject> batchableInstance = createBatchableInstance();
+        batchableInstance.execute(context, scope);
     }
 
     global void finish(Database.BatchableContext context) {
-        Database.Batchable<SObject> currentJobInstance = super.createCurrentJobInstance();
-        currentJobInstance.finish(context);
-        super.executeNextSuccessor();
+        Database.Batchable<SObject> batchableInstance = createBatchableInstance();
+        batchableInstance.finish(context);
+        executeNextSuccessor();
     }
 }
