@@ -130,7 +130,7 @@ global inherited sharing virtual class sbs_JobSequence {
         /**
          * Additional data to pass into the job.
          */
-        global Map<String, Object> data;
+        global String data;
 
         global JobConfig() {}
 
@@ -151,7 +151,7 @@ global inherited sharing virtual class sbs_JobSequence {
          * @param  data      Additional data to pass into the job.
          * @return           New job configuration.
          */
-        global JobConfig(String className, Map<String, Object> data) {
+        global JobConfig(String className, String data) {
             this(className, 200, data);
         }
 
@@ -190,6 +190,18 @@ global inherited sharing virtual class sbs_JobSequence {
         }
 
         /**
+         * Create new job configuration with given start type and data.
+         * 
+         * @param  className Qualified name of the Apex class to execute.
+         * @param  startType Start type of the job.
+         * @param  data      Additional data to pass into the job.
+         * @return           New job configuration.
+         */
+        global JobConfig(String className, StartType startType, String data) {
+            this(className, startType, 200, data);
+        }
+
+        /**
          * Create new job configuration with given batch size, data and default start type.
          * 
          * @param  className Qualified name of the Apex class to execute.
@@ -197,7 +209,7 @@ global inherited sharing virtual class sbs_JobSequence {
          * @param  data      Additional data to pass into the job.
          * @return           New job configuration.
          */
-        global JobConfig(String className, Integer batchSize, Map<String, Object> data) {
+        global JobConfig(String className, Integer batchSize, String data) {
             this(className, sbs_JobSequence.StartType.BATCH_DIRECT, batchSize, data);
         }
 
@@ -210,7 +222,7 @@ global inherited sharing virtual class sbs_JobSequence {
          * @param  data      Additional data to pass into the job.
          * @return           New job configuration.
          */
-        global JobConfig(String className, StartType startType, Integer batchSize, Map<String, Object> data) {
+        global JobConfig(String className, StartType startType, Integer batchSize, String data) {
             this.className = className;
             this.startType = startType != null ? startType : sbs_JobSequence.StartType.BATCH_DIRECT;
             this.batchSize = batchSize != null && batchSize > 0 ? batchSize : 200;
