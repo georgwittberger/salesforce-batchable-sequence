@@ -2,6 +2,10 @@
 
 > Execute multiple Salesforce batchable or queueable Apex jobs one after another.
 
+![GitHub version](https://img.shields.io/github/package-json/v/georgwittberger/salesforce-batchable-sequence)
+![GitHub issues](https://img.shields.io/github/issues/georgwittberger/salesforce-batchable-sequence)
+![GitHub license](https://img.shields.io/github/license/georgwittberger/salesforce-batchable-sequence)
+
 This SFDX project provides a small orchestration framework which allows you to execute multiple `Database.Batchable` or `Queueable` jobs as a chained sequence.
 
 A typical use case for this solution is processing large sets of data for different Salesforce objects where the jobs have to run one after another due to interdependencies between the records.
@@ -18,7 +22,12 @@ A typical use case for this solution is processing large sets of data for differ
 
 ## Installation
 
-Deploy this SFDX project using the source files in this Git repository.
+<a href="https://githubsfdeploy.herokuapp.com?owner=georgwittberger&repo=salesforce-batchable-sequence&ref=master">
+  <img alt="Deploy to Salesforce"
+       src="https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/deploy.png">
+</a>
+
+Or deploy this SFDX project using the source files in this Git repository.
 
 1. Clone the repository
 2. Deploy using Salesforce CLI: `sfdx force:source:deploy -p source`
