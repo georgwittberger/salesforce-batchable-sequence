@@ -2,7 +2,7 @@
 
 > Execute multiple Salesforce batchable or queueable Apex jobs one after another.
 
-![GitHub version](https://img.shields.io/github/package-json/v/georgwittberger/salesforce-batchable-sequence)
+![GitHub release](https://img.shields.io/github/v/release/georgwittberger/salesforce-batchable-sequence)
 ![GitHub issues](https://img.shields.io/github/issues/georgwittberger/salesforce-batchable-sequence)
 ![GitHub license](https://img.shields.io/github/license/georgwittberger/salesforce-batchable-sequence)
 
