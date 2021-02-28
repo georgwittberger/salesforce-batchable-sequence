@@ -1,6 +1,83 @@
 @IsTest
 class sbs_JobSequenceTest {
     @IsTest
+    static void constructsJobConfigurationWithClassName() {
+        Test.startTest();
+        sbs_JobSequence.JobConfig jobConfig = new sbs_JobSequence.JobConfig('TestClass');
+        Test.stopTest();
+        System.assertEquals('TestClass', jobConfig.className, 'Job configuration should have expected Apex class');
+        System.assertEquals(sbs_JobSequence.StartType.BATCH_DIRECT, jobConfig.startType, 'Job configuration should have expected start type');
+        System.assertEquals(200, jobConfig.batchSize, 'Job configuration should have expected batch size');
+        System.assertEquals(null, jobConfig.data, 'Job configuration should not have any data');
+    }
+
+    @IsTest
+    static void constructsJobConfigurationWithClassNameAndData() {
+        Test.startTest();
+        sbs_JobSequence.JobConfig jobConfig = new sbs_JobSequence.JobConfig('TestClass', 'Test Data');
+        Test.stopTest();
+        System.assertEquals('TestClass', jobConfig.className, 'Job configuration should have expected Apex class');
+        System.assertEquals(sbs_JobSequence.StartType.BATCH_DIRECT, jobConfig.startType, 'Job configuration should have expected start type');
+        System.assertEquals(200, jobConfig.batchSize, 'Job configuration should have expected batch size');
+        System.assertEquals('Test Data', jobConfig.data, 'Job configuration should have expected data');
+    }
+
+    @IsTest
+    static void constructsJobConfigurationWithClassNameAndStartType() {
+        Test.startTest();
+        sbs_JobSequence.JobConfig jobConfig = new sbs_JobSequence.JobConfig('TestClass', sbs_JobSequence.StartType.BATCH_QUERYLOCATOR);
+        Test.stopTest();
+        System.assertEquals('TestClass', jobConfig.className, 'Job configuration should have expected Apex class');
+        System.assertEquals(sbs_JobSequence.StartType.BATCH_QUERYLOCATOR, jobConfig.startType, 'Job configuration should have expected start type');
+        System.assertEquals(200, jobConfig.batchSize, 'Job configuration should have expected batch size');
+        System.assertEquals(null, jobConfig.data, 'Job configuration should not have any data');
+    }
+
+    @IsTest
+    static void constructsJobConfigurationWithClassNameAndBatchSize() {
+        Test.startTest();
+        sbs_JobSequence.JobConfig jobConfig = new sbs_JobSequence.JobConfig('TestClass', 320);
+        Test.stopTest();
+        System.assertEquals('TestClass', jobConfig.className, 'Job configuration should have expected Apex class');
+        System.assertEquals(sbs_JobSequence.StartType.BATCH_DIRECT, jobConfig.startType, 'Job configuration should have expected start type');
+        System.assertEquals(320, jobConfig.batchSize, 'Job configuration should have expected batch size');
+        System.assertEquals(null, jobConfig.data, 'Job configuration should not have any data');
+    }
+
+    @IsTest
+    static void constructsJobConfigurationWithClassNameAndStartTypeAndBatchSize() {
+        Test.startTest();
+        sbs_JobSequence.JobConfig jobConfig = new sbs_JobSequence.JobConfig('TestClass', sbs_JobSequence.StartType.BATCH_QUERYLOCATOR, 320);
+        Test.stopTest();
+        System.assertEquals('TestClass', jobConfig.className, 'Job configuration should have expected Apex class');
+        System.assertEquals(sbs_JobSequence.StartType.BATCH_QUERYLOCATOR, jobConfig.startType, 'Job configuration should have expected start type');
+        System.assertEquals(320, jobConfig.batchSize, 'Job configuration should have expected batch size');
+        System.assertEquals(null, jobConfig.data, 'Job configuration should not have any data');
+    }
+
+    @IsTest
+    static void constructsJobConfigurationWithClassNameAndStartTypeAndData() {
+        Test.startTest();
+        sbs_JobSequence.JobConfig jobConfig = new sbs_JobSequence.JobConfig('TestClass', sbs_JobSequence.StartType.QUEUEABLE_DIRECT, 'Test Data');
+        Test.stopTest();
+        System.assertEquals('TestClass', jobConfig.className, 'Job configuration should have expected Apex class');
+        System.assertEquals(sbs_JobSequence.StartType.QUEUEABLE_DIRECT, jobConfig.startType, 'Job configuration should have expected start type');
+        System.assertEquals(200, jobConfig.batchSize, 'Job configuration should have expected batch size');
+        System.assertEquals('Test Data', jobConfig.data, 'Job configuration should have expected data');
+    }
+
+    @IsTest
+    static void constructsJobConfigurationWithClassNameAndBatchSizeAndData() {
+        Test.startTest();
+        sbs_JobSequence.JobConfig jobConfig = new sbs_JobSequence.JobConfig('TestClass', 320, 'Test Data');
+        Test.stopTest();
+        System.assertEquals('TestClass', jobConfig.className, 'Job configuration should have expected Apex class');
+        System.assertEquals(sbs_JobSequence.StartType.BATCH_DIRECT, jobConfig.startType, 'Job configuration should have expected start type');
+        System.assertEquals(320, jobConfig.batchSize, 'Job configuration should have expected batch size');
+        System.assertEquals('Test Data', jobConfig.data, 'Job configuration should have expected data');
+    }
+
+    @IsTest
     static void providesCurrentJobConfiguration() {
         Test.startTest();
         sbs_JobSequenceMock jobSequence = new sbs_JobSequenceMock(new List<sbs_JobSequence.JobConfig>{
